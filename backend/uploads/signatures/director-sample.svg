@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100" viewBox="0 0 300 100">
+  <path d="M25,50 Q70,10 110,60 T180,30 Q220,70 270,40" fill="none" stroke="#047857" stroke-width="3.5" stroke-linecap="round"/>
+  <text x="60" y="85" font-family="Brush Script MT, cursive, sans-serif" font-size="28" fill="#065f46">Marcus Vance</text>
+</svg>
