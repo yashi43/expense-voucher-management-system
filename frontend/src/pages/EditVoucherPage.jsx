@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import SignatureUploader from '../components/SignatureUploader';
-import { Save, Send, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Save, ArrowLeft, AlertCircle } from 'lucide-react';
 
 const DEPARTMENTS = [
   'Engineering',
@@ -27,6 +26,8 @@ const CATEGORIES = [
   'Miscellaneous',
 ];
 
+const STATUSES = ['Draft', 'Submitted', 'Approved', 'Rejected'];
+
 const EditVoucherPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -38,11 +39,11 @@ const EditVoucherPage = () => {
     expenseCategory: '',
     expenseDescription: '',
     amount: '',
-    employeeSignature: '',
+    status: 'Draft',
   });
 
   const [voucherNumber, setVoucherNumber] = useState('');
-  const [status, setStatus] = useState('');
+  const [employeeName, setEmployeeName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -54,21 +55,16 @@ const EditVoucherPage = () => {
         const res = await api.get(`/vouchers/${id}`);
         if (res.data.success) {
           const v = res.data.data;
-          if (v.status !== 'Draft') {
-            setError(`Cannot edit voucher with status '${v.status}'. Only Draft vouchers can be edited.`);
-            setStatus(v.status);
-            return;
-          }
           setVoucherNumber(v.voucherNumber);
-          setStatus(v.status);
+          setEmployeeName(v.employeeName);
           setFormData({
-            department: v.department,
-            expenseTitle: v.expenseTitle,
+            department: v.department || 'Engineering',
+            expenseTitle: v.expenseTitle || '',
             expenseDate: v.expenseDate ? v.expenseDate.split('T')[0] : '',
-            expenseCategory: v.expenseCategory,
+            expenseCategory: v.expenseCategory || 'Miscellaneous',
             expenseDescription: v.expenseDescription || '',
-            amount: v.amount,
-            employeeSignature: v.employeeSignature || '',
+            amount: v.amount || '',
+            status: v.status || 'Draft',
           });
         }
       } catch (err) {
@@ -87,10 +83,6 @@ const EditVoucherPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSignatureChange = (sigUrl) => {
-    setFormData((prev) => ({ ...prev, employeeSignature: sigUrl }));
-  };
-
   const validateBasicFields = () => {
     if (!formData.department.trim()) return 'Department is mandatory.';
     if (!formData.expenseTitle.trim()) return 'Expense Title is mandatory.';
@@ -100,7 +92,8 @@ const EditVoucherPage = () => {
     return null;
   };
 
-  const handleUpdateDraft = async () => {
+  const handleUpdate = async (e) => {
+    e.preventDefault();
     const valError = validateBasicFields();
     if (valError) {
       setError(valError);
@@ -121,45 +114,7 @@ const EditVoucherPage = () => {
       }
     } catch (err) {
       console.error('Update failed:', err);
-      setError(err.response?.data?.message || 'Failed to update draft voucher');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSubmitForApproval = async () => {
-    const valError = validateBasicFields();
-    if (valError) {
-      setError(valError);
-      return;
-    }
-
-    if (!formData.employeeSignature) {
-      setError('Employee Signature is mandatory before submitting a voucher for approval.');
-      return;
-    }
-
-    setError('');
-    setSaving(true);
-
-    try {
-      // Save updates first
-      await api.put(`/vouchers/${id}`, {
-        ...formData,
-        amount: Number(formData.amount),
-      });
-
-      // Submit
-      const res = await api.post(`/vouchers/${id}/submit`, {
-        employeeSignature: formData.employeeSignature,
-      });
-
-      if (res.data.success) {
-        navigate(`/vouchers/${id}`);
-      }
-    } catch (err) {
-      console.error('Submission failed:', err);
-      setError(err.response?.data?.message || 'Failed to submit voucher');
+      setError(err.response?.data?.message || 'Failed to update voucher');
     } finally {
       setSaving(false);
     }
@@ -168,23 +123,7 @@ const EditVoucherPage = () => {
   if (loading) {
     return (
       <div className="container" style={{ padding: '3rem 0', textAlign: 'center' }}>
-        <p style={{ color: 'var(--slate-500)' }}>Loading draft voucher...</p>
-      </div>
-    );
-  }
-
-  if (status && status !== 'Draft') {
-    return (
-      <div className="container" style={{ maxWidth: '650px', padding: '3rem 0', textAlign: 'center' }}>
-        <div className="card" style={{ padding: '2rem' }}>
-          <h2 style={{ color: 'var(--danger)', marginBottom: '0.75rem' }}>Editing Restricted</h2>
-          <p style={{ marginBottom: '1.5rem', color: 'var(--slate-600)' }}>
-            Voucher <strong>{voucherNumber}</strong> has already been {status}. Per company business rules, vouchers can only be modified while in <strong>Draft</strong> status.
-          </p>
-          <button onClick={() => navigate(`/vouchers/${id}`)} className="btn btn-primary">
-            View Voucher Details
-          </button>
-        </div>
+        <p style={{ color: 'var(--slate-500)' }}>Loading voucher details...</p>
       </div>
     );
   }
@@ -200,9 +139,9 @@ const EditVoucherPage = () => {
         >
           <ArrowLeft size={16} /> Back
         </button>
-        <h1>Edit Draft Voucher</h1>
+        <h1>Edit Expense Voucher</h1>
         <p style={{ color: 'var(--slate-500)' }}>
-          Modifying draft <strong>{voucherNumber}</strong>
+          Update voucher <strong>{voucherNumber}</strong> ({employeeName})
         </p>
       </div>
 
@@ -213,10 +152,10 @@ const EditVoucherPage = () => {
         </div>
       )}
 
-      <div className="card">
+      <form onSubmit={handleUpdate} className="card">
         <div className="card-header">
-          <div className="card-title">Voucher Details</div>
-          <span className="badge badge-draft">Draft</span>
+          <div className="card-title">Edit Voucher Details</div>
+          <span className="badge badge-draft">{formData.status}</span>
         </div>
 
         <div className="card-body">
@@ -290,20 +229,40 @@ const EditVoucherPage = () => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">
-              Claim Amount ($) <span className="required">*</span>
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0.01"
-              name="amount"
-              className="form-control"
-              value={formData.amount}
-              onChange={handleChange}
-              required
-            />
+          <div className="grid grid-cols-2" style={{ gap: '1.25rem' }}>
+            <div className="form-group">
+              <label className="form-label">
+                Claim Amount ($) <span className="required">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                name="amount"
+                className="form-control"
+                value={formData.amount}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                Voucher Status
+              </label>
+              <select
+                name="status"
+                className="form-select"
+                value={formData.status}
+                onChange={handleChange}
+              >
+                {STATUSES.map((st) => (
+                  <option key={st} value={st}>
+                    {st === 'Submitted' ? 'Submitted (Pending Review)' : st}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="form-group">
@@ -311,17 +270,10 @@ const EditVoucherPage = () => {
             <textarea
               name="expenseDescription"
               rows={3}
+              placeholder="Provide context or notes about this expenditure..."
               className="form-textarea"
               value={formData.expenseDescription}
               onChange={handleChange}
-            />
-          </div>
-
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
-            <SignatureUploader
-              value={formData.employeeSignature}
-              onChange={handleSignatureChange}
-              label="Employee Signature"
             />
           </div>
         </div>
@@ -329,22 +281,21 @@ const EditVoucherPage = () => {
         <div className="card-footer">
           <button
             type="button"
-            onClick={handleUpdateDraft}
-            disabled={saving}
+            onClick={() => navigate(-1)}
             className="btn btn-secondary"
+            disabled={saving}
           >
-            <Save size={16} /> Save Changes
+            Cancel
           </button>
           <button
-            type="button"
-            onClick={handleSubmitForApproval}
+            type="submit"
             disabled={saving}
             className="btn btn-primary"
           >
-            <Send size={16} /> Save & Submit for Approval
+            <Save size={16} /> {saving ? 'Saving...' : 'Update & Save Voucher'}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

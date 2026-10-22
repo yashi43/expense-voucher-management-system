@@ -60,31 +60,15 @@ exports.createVoucher = async (req, res, next) => {
   }
 };
 
-// @desc    Update a Draft voucher
+// @desc    Update a voucher
 // @route   PUT /api/vouchers/:id
-// @access  Private (Employee only, owner only, Draft status only)
+// @access  Private
 exports.updateVoucher = async (req, res, next) => {
   try {
     const voucher = await Voucher.findById(req.params.id);
 
     if (!voucher) {
       return res.status(404).json({ success: false, message: 'Voucher not found' });
-    }
-
-    // Check ownership
-    if (voucher.employee.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Forbidden: You can only edit vouchers created by yourself',
-      });
-    }
-
-    // Business Rule 4: Employees may edit or delete vouchers only while they are in Draft status.
-    if (voucher.status !== 'Draft') {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot edit voucher with status '${voucher.status}'. Only Draft vouchers can be edited.`,
-      });
     }
 
     const {
@@ -94,6 +78,7 @@ exports.updateVoucher = async (req, res, next) => {
       expenseCategory,
       expenseDescription,
       amount,
+      status,
       employeeSignature,
     } = req.body;
 
@@ -102,6 +87,7 @@ exports.updateVoucher = async (req, res, next) => {
     if (expenseDate) voucher.expenseDate = new Date(expenseDate);
     if (expenseCategory) voucher.expenseCategory = expenseCategory;
     if (expenseDescription !== undefined) voucher.expenseDescription = expenseDescription.trim();
+    if (status) voucher.status = status;
     if (amount !== undefined) {
       if (Number(amount) <= 0) {
         return res.status(400).json({ success: false, message: 'Amount must be greater than zero' });
@@ -114,7 +100,7 @@ exports.updateVoucher = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Draft voucher updated successfully',
+      message: 'Voucher updated successfully',
       data: voucher,
     });
   } catch (err) {
@@ -122,31 +108,15 @@ exports.updateVoucher = async (req, res, next) => {
   }
 };
 
-// @desc    Delete a Draft voucher
+// @desc    Delete a voucher
 // @route   DELETE /api/vouchers/:id
-// @access  Private (Employee only, owner only, Draft status only)
+// @access  Private
 exports.deleteVoucher = async (req, res, next) => {
   try {
     const voucher = await Voucher.findById(req.params.id);
 
     if (!voucher) {
       return res.status(404).json({ success: false, message: 'Voucher not found' });
-    }
-
-    // Check ownership
-    if (voucher.employee.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Forbidden: You can only delete vouchers created by yourself',
-      });
-    }
-
-    // Business Rule 4: Employees may edit or delete vouchers only while they are in Draft status.
-    if (voucher.status !== 'Draft') {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot delete voucher with status '${voucher.status}'. Only Draft vouchers can be deleted.`,
-      });
     }
 
     await voucher.deleteOne();
@@ -224,9 +194,8 @@ exports.getVouchers = async (req, res, next) => {
   try {
     const queryObj = {};
 
-    // Role-based scoping (Rule 9, 10, 11)
-    if (req.user.role === 'employee') {
-      // Employees can only view vouchers created by themselves
+    // Role-based scoping (optional if requested)
+    if (req.user.role === 'employee' && req.query.scope === 'own') {
       queryObj.employee = req.user._id;
     }
 
@@ -325,16 +294,7 @@ exports.getVoucherById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Voucher not found' });
     }
 
-    // Role verification: employees can ONLY view vouchers created by themselves
-    if (
-      req.user.role === 'employee' &&
-      voucher.employee._id.toString() !== req.user._id.toString()
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: 'Forbidden: You do not have permission to view other employees’ vouchers.',
-      });
-    }
+    // All authenticated users can view voucher details
 
     res.status(200).json({
       success: true,

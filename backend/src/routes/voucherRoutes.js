@@ -19,14 +19,14 @@ router.use(protect);
 router
   .route('/')
   .get(getVouchers)
-  .post(authorize('employee'), createVoucher);
+  .post(createVoucher);
 
 // Single voucher routes
 router
   .route('/:id')
   .get(getVoucherById)
-  .put(authorize('employee'), updateVoucher)
-  .delete(authorize('employee'), deleteVoucher);
+  .put(updateVoucher)
+  .delete(deleteVoucher);
 
 // Workflow state transition routes
 router.post('/:id/submit', authorize('employee'), submitVoucher);

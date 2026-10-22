@@ -59,66 +59,36 @@ const Navbar = () => {
                 </NavLink>
               </li>
 
-              {/* Employee Links */}
-              {user?.role === 'employee' && (
-                <>
-                  <li>
-                    <NavLink
-                      to="/vouchers/create"
-                      className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                    >
-                      <PlusCircle size={18} />
-                      <span>Create Voucher</span>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/vouchers"
-                      end
-                      className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                    >
-                      <FolderOpen size={18} />
-                      <span>My Vouchers</span>
-                    </NavLink>
-                  </li>
-                </>
-              )}
+              <li>
+                <NavLink
+                  to="/vouchers/create"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  <PlusCircle size={18} />
+                  <span>Create Voucher</span>
+                </NavLink>
+              </li>
 
-              {/* Director Links */}
+              <li>
+                <NavLink
+                  to="/vouchers"
+                  end
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  <FolderOpen size={18} />
+                  <span>All Vouchers</span>
+                </NavLink>
+              </li>
+
+              {/* Director Specific Links */}
               {user?.role === 'director' && (
-                <>
-                  <li>
-                    <NavLink
-                      to="/vouchers/pending"
-                      className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                    >
-                      <Clock size={18} />
-                      <span>Pending Approvals</span>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/vouchers"
-                      end
-                      className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                    >
-                      <FolderOpen size={18} />
-                      <span>All Vouchers</span>
-                    </NavLink>
-                  </li>
-                </>
-              )}
-
-              {/* Accounts Links */}
-              {user?.role === 'accounts' && (
                 <li>
                   <NavLink
-                    to="/vouchers"
-                    end
+                    to="/vouchers/pending"
                     className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                   >
-                    <FolderOpen size={18} />
-                    <span>All Vouchers</span>
+                    <Clock size={18} />
+                    <span>Pending Approvals</span>
                   </NavLink>
                 </li>
               )}

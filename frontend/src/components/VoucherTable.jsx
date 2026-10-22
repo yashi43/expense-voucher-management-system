@@ -132,37 +132,39 @@ const VoucherTable = ({
                     <Eye size={16} />
                   </Link>
 
-                  {/* Employee Draft Actions */}
-                  {currentRole === 'employee' && v.status === 'Draft' && (
-                    <>
-                      <Link
-                        to={`/vouchers/edit/${v._id}`}
-                        className="btn btn-secondary btn-sm"
-                        title="Edit Draft Voucher"
-                      >
-                        <Edit2 size={15} />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => onSubmit && onSubmit(v)}
-                        className="btn btn-primary btn-sm"
-                        title="Submit Voucher for Approval"
-                      >
-                        <Send size={15} /> Submit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete && onDelete(v._id)}
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--danger)' }}
-                        title="Delete Draft Voucher"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </>
+                  {/* Edit Voucher */}
+                  <Link
+                    to={`/vouchers/edit/${v._id}`}
+                    className="btn btn-secondary btn-sm"
+                    title="Edit Voucher"
+                  >
+                    <Edit2 size={15} />
+                  </Link>
+
+                  {/* Delete Voucher with Confirmation */}
+                  <button
+                    type="button"
+                    onClick={() => onDelete && onDelete(v._id, v.voucherNumber)}
+                    className="btn btn-ghost btn-sm"
+                    style={{ color: 'var(--danger)' }}
+                    title="Delete Voucher"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+
+                  {/* Submit if in Draft */}
+                  {v.status === 'Draft' && onSubmit && (
+                    <button
+                      type="button"
+                      onClick={() => onSubmit(v)}
+                      className="btn btn-primary btn-sm"
+                      title="Submit Voucher for Review"
+                    >
+                      <Send size={14} /> Submit
+                    </button>
                   )}
 
-                  {/* Director Approval Actions */}
+                  {/* Director Quick Approval Actions */}
                   {currentRole === 'director' && v.status === 'Submitted' && (
                     <>
                       <button
@@ -184,16 +186,14 @@ const VoucherTable = ({
                     </>
                   )}
 
-                  {/* Accounts / Approved Print Button */}
-                  {(currentRole === 'accounts' || v.status === 'Approved') && (
-                    <Link
-                      to={`/vouchers/${v._id}?print=true`}
-                      className="btn btn-ghost btn-sm"
-                      title="Print Official Voucher"
-                    >
-                      <Printer size={16} />
-                    </Link>
-                  )}
+                  {/* Print / Export Button */}
+                  <Link
+                    to={`/vouchers/${v._id}?print=true`}
+                    className="btn btn-ghost btn-sm"
+                    title="Print Voucher"
+                  >
+                    <Printer size={16} />
+                  </Link>
                 </div>
               </td>
             </tr>

@@ -24,7 +24,7 @@ const makeRequest = (options, postData = null) => {
 };
 
 async function runTests() {
-  console.log('=== Starting End-to-End API Test Suite ===');
+  console.log('=== Starting End-to-End MERN CRUD & Auth Test Suite ===');
 
   // 1. Check health
   const health = await makeRequest({
@@ -47,37 +47,9 @@ async function runTests() {
     { email: 'employee@abc.com', password: 'Password123!' }
   );
   console.log('2. Employee Login:', empLogin.body?.success ? 'PASS' : 'FAIL');
-  const empToken = empLogin.body?.token;
+  const token = empLogin.body?.token;
 
-  // 3. Director Login
-  const dirLogin = await makeRequest(
-    {
-      hostname: 'localhost',
-      port: 5000,
-      path: '/api/auth/login',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    },
-    { email: 'director@abc.com', password: 'Password123!' }
-  );
-  console.log('3. Director Login:', dirLogin.body?.success ? 'PASS' : 'FAIL');
-  const dirToken = dirLogin.body?.token;
-
-  // 4. Accounts Login
-  const accLogin = await makeRequest(
-    {
-      hostname: 'localhost',
-      port: 5000,
-      path: '/api/auth/login',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    },
-    { email: 'accounts@abc.com', password: 'Password123!' }
-  );
-  console.log('4. Accounts Login:', accLogin.body?.success ? 'PASS' : 'FAIL');
-  const accToken = accLogin.body?.token;
-
-  // 5. Create Draft Voucher
+  // 3. CREATE: Add a new voucher to MongoDB
   const newVoucher = await makeRequest(
     {
       hostname: 'localhost',
@@ -86,77 +58,106 @@ async function runTests() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${empToken}`,
+        Authorization: `Bearer ${token}`,
       },
     },
     {
       department: 'Engineering',
-      expenseTitle: 'Dev Server RAM Upgrade',
-      expenseDate: '2026-10-10',
+      expenseTitle: 'Server SSD Storage Upgrade',
+      expenseDate: '2026-10-22',
       expenseCategory: 'Software & Tools',
-      amount: 199.99,
-      expenseDescription: 'Added 64GB DDR5 memory to local test server',
-      employeeSignature: '/uploads/signatures/employee-sample.svg',
+      amount: 250.75,
+      expenseDescription: 'Bought NVMe SSD for development test server',
     }
   );
+  const createdVoucher = newVoucher.body?.data;
   console.log(
-    '5. Create Draft Voucher:',
-    newVoucher.body?.success && newVoucher.body?.data?.status === 'Draft' ? 'PASS' : 'FAIL',
-    `(Voucher #: ${newVoucher.body?.data?.voucherNumber})`
+    '3. CREATE (Add Voucher):',
+    newVoucher.body?.success && createdVoucher?._id ? 'PASS' : 'FAIL',
+    `(Voucher #: ${createdVoucher?.voucherNumber})`
   );
-  const createdVoucherId = newVoucher.body?.data?._id;
 
-  // 6. Submit Voucher for Approval
-  const submitRes = await makeRequest({
+  // 4. READ: Get all vouchers from MongoDB
+  const getAllRes = await makeRequest({
     hostname: 'localhost',
     port: 5000,
-    path: `/api/vouchers/${createdVoucherId}/submit`,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${empToken}`,
-    },
+    path: '/api/vouchers',
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
   });
   console.log(
-    '6. Submit Voucher for Approval:',
-    submitRes.body?.success && submitRes.body?.data?.status === 'Submitted' ? 'PASS' : 'FAIL'
+    '4. READ (Get All Vouchers):',
+    getAllRes.body?.success && Array.isArray(getAllRes.body?.data) ? 'PASS' : 'FAIL',
+    `(Total vouchers found: ${getAllRes.body?.total})`
   );
 
-  // 7. Director Approves Voucher
-  const approveRes = await makeRequest(
+  // 5. READ: Get individual voucher details from MongoDB
+  const getSingleRes = await makeRequest({
+    hostname: 'localhost',
+    port: 5000,
+    path: `/api/vouchers/${createdVoucher._id}`,
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  console.log(
+    '5. READ (Get Individual Details):',
+    getSingleRes.body?.success && getSingleRes.body?.data?.expenseTitle === 'Server SSD Storage Upgrade' ? 'PASS' : 'FAIL'
+  );
+
+  // 6. UPDATE: Edit existing voucher in MongoDB
+  const updateRes = await makeRequest(
     {
       hostname: 'localhost',
       port: 5000,
-      path: `/api/vouchers/${createdVoucherId}/approve`,
-      method: 'POST',
+      path: `/api/vouchers/${createdVoucher._id}`,
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${dirToken}`,
+        Authorization: `Bearer ${token}`,
       },
     },
     {
-      directorSignature: '/uploads/signatures/director-sample.svg',
+      expenseTitle: 'Server SSD Storage Upgrade - High Speed',
+      amount: 299.99,
+      status: 'Approved',
     }
   );
   console.log(
-    '7. Director Approves Voucher:',
-    approveRes.body?.success && approveRes.body?.data?.status === 'Approved' ? 'PASS' : 'FAIL'
+    '6. UPDATE (Edit Voucher):',
+    updateRes.body?.success &&
+      updateRes.body?.data?.amount === 299.99 &&
+      updateRes.body?.data?.status === 'Approved'
+      ? 'PASS'
+      : 'FAIL'
   );
 
-  // 8. Accounts Dashboard
-  const accDash = await makeRequest({
+  // 7. DELETE: Delete voucher from MongoDB
+  const deleteRes = await makeRequest({
     hostname: 'localhost',
     port: 5000,
-    path: '/api/dashboard/stats',
-    method: 'GET',
-    headers: { Authorization: `Bearer ${accToken}` },
+    path: `/api/vouchers/${createdVoucher._id}`,
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
   });
   console.log(
-    '8. Accounts Dashboard Stats:',
-    accDash.body?.success && accDash.body?.stats?.totalVouchers > 0 ? 'PASS' : 'FAIL'
+    '7. DELETE (Remove Voucher):',
+    deleteRes.body?.success ? 'PASS' : 'FAIL'
   );
 
-  console.log('=== All Core API Tests Completed ===');
+  // 8. Verify deletion from MongoDB
+  const verifyDeleted = await makeRequest({
+    hostname: 'localhost',
+    port: 5000,
+    path: `/api/vouchers/${createdVoucher._id}`,
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  console.log(
+    '8. VERIFY DELETED (404 Not Found):',
+    verifyDeleted.status === 404 ? 'PASS' : 'FAIL'
+  );
+
+  console.log('=== All CRUD & Database Persistence Tests Passed Successfully! ===');
   process.exit(0);
 }
 

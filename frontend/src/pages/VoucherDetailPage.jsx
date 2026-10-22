@@ -138,23 +138,26 @@ const VoucherDetailPage = () => {
             <Printer size={16} /> Print Voucher
           </button>
 
-          {/* Employee actions if Draft */}
-          {role === 'employee' && isOwner && voucher.status === 'Draft' && (
-            <>
-              <Link to={`/vouchers/edit/${voucher._id}`} className="btn btn-secondary btn-sm">
-                <Edit2 size={15} /> Edit Draft
-              </Link>
-              <button onClick={handleSubmit} className="btn btn-primary btn-sm">
-                <Send size={15} /> Submit for Approval
-              </button>
-              <button
-                onClick={handleDelete}
-                className="btn btn-ghost btn-sm"
-                style={{ color: 'var(--danger)' }}
-              >
-                <Trash2 size={16} />
-              </button>
-            </>
+          {/* Edit Voucher */}
+          <Link to={`/vouchers/edit/${voucher._id}`} className="btn btn-secondary btn-sm">
+            <Edit2 size={15} /> Edit Voucher
+          </Link>
+
+          {/* Delete Voucher with Confirmation */}
+          <button
+            onClick={handleDelete}
+            className="btn btn-ghost btn-sm"
+            style={{ color: 'var(--danger)' }}
+            title="Delete Voucher"
+          >
+            <Trash2 size={16} /> Delete
+          </button>
+
+          {/* Employee Submit if in Draft */}
+          {voucher.status === 'Draft' && (
+            <button onClick={handleSubmit} className="btn btn-primary btn-sm">
+              <Send size={15} /> Submit for Review
+            </button>
           )}
 
           {/* Director review actions if Submitted */}

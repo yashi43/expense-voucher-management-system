@@ -325,17 +325,17 @@ const CreateVoucherPage = () => {
             type="button"
             onClick={handleSaveDraft}
             disabled={loading}
-            className="btn btn-secondary"
+            className="btn btn-primary"
           >
-            <Save size={16} /> Save as Draft
+            <Save size={16} /> Create Voucher
           </button>
           <button
             type="button"
             onClick={handleSubmitApproval}
             disabled={loading}
-            className="btn btn-primary"
+            className="btn btn-secondary"
           >
-            <Send size={16} /> Submit for Approval
+            <Send size={16} /> Submit with Signature
           </button>
         </div>
       </div>

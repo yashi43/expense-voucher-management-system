@@ -50,21 +50,21 @@ function App() {
               }
             />
 
-            {/* Create Voucher (Employee only) */}
+            {/* Create Voucher */}
             <Route
               path="/vouchers/create"
               element={
-                <ProtectedRoute allowedRoles={['employee']}>
+                <ProtectedRoute allowedRoles={['employee', 'director', 'accounts']}>
                   <CreateVoucherPage />
                 </ProtectedRoute>
               }
             />
 
-            {/* Edit Draft Voucher (Employee only) */}
+            {/* Edit Voucher */}
             <Route
               path="/vouchers/edit/:id"
               element={
-                <ProtectedRoute allowedRoles={['employee']}>
+                <ProtectedRoute allowedRoles={['employee', 'director', 'accounts']}>
                   <EditVoucherPage />
                 </ProtectedRoute>
               }

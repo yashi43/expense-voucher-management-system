@@ -97,8 +97,9 @@ const VoucherListPage = () => {
     }
   };
 
-  const handleDeleteDraft = async (id) => {
-    if (!confirm('Are you sure you want to permanently delete this draft voucher?')) return;
+  const handleDeleteDraft = async (id, voucherNumber) => {
+    const vText = voucherNumber ? `voucher ${voucherNumber}` : 'this voucher';
+    if (!confirm(`Are you sure you want to permanently delete ${vText}?`)) return;
 
     try {
       const res = await api.delete(`/vouchers/${id}`);
