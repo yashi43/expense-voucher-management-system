@@ -52,18 +52,6 @@ const LoginPage = () => {
     }
   };
 
-  const handleQuickDemoLogin = async (demoEmail, demoPassword) => {
-    setError('');
-    setLoading(true);
-    const result = await login(demoEmail, demoPassword);
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      setError(result.message);
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="login-page-wrapper">
       <div className="login-card">
@@ -193,55 +181,20 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
+            style={{ fontWeight: 600, color: 'var(--primary)' }}
             onClick={() => {
               setIsRegister(!isRegister);
               setError('');
             }}
           >
             {isRegister
-              ? 'Already registered? Return to Login'
-              : 'Need a new account? Register here'}
+              ? '← Already have an account? Sign In here'
+              : 'Don’t have an account yet? Register / Create Account →'}
           </button>
-        </div>
-
-        {/* Demo Fast Login Box */}
-        <div className="demo-account-box">
-          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--slate-600)', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.5rem' }}>
-            Quick Demo Accounts (1-Click Login)
-          </div>
-          <div className="demo-buttons-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              disabled={loading}
-              onClick={() => handleQuickDemoLogin('yashi@bharattech.com', 'Password123!')}
-              title="Employee: Yashi Mehta"
-            >
-              Yashi (Emp)
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              disabled={loading}
-              onClick={() => handleQuickDemoLogin('sakshi@bharattech.com', 'Password123!')}
-              title="Director: Sakshi Phadtare"
-            >
-              Sakshi (Dir)
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              disabled={loading}
-              onClick={() => handleQuickDemoLogin('varad@bharattech.com', 'Password123!')}
-              title="Accounts: Varad Jadhav"
-            >
-              Varad (Acc)
-            </button>
-          </div>
         </div>
       </div>
     </div>

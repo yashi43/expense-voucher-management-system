@@ -6,7 +6,6 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const connectDB = require('../config/db');
 const Voucher = require('../models/Voucher');
-const User = require('../models/User');
 const { Counter } = require('../models/Counter');
 
 const seedData = async () => {
@@ -15,63 +14,9 @@ const seedData = async () => {
       await connectDB();
     }
 
-    console.log('[Seed] Clearing existing collections...');
+    console.log('[Seed] Checking voucher collections...');
     await Voucher.deleteMany({});
     await Counter.deleteMany({});
-    await User.deleteMany({});
-
-    console.log('[Seed] Seeding Indian demo user accounts...');
-    const users = await User.create([
-      {
-        name: 'Yashi Mehta',
-        email: 'yashi@bharattech.com',
-        password: 'Password123!',
-        role: 'employee',
-        employeeId: 'EMP-101',
-        department: 'Software Engineering',
-      },
-      {
-        name: 'Sakshi Phadtare',
-        email: 'sakshi@bharattech.com',
-        password: 'Password123!',
-        role: 'director',
-        employeeId: 'DIR-201',
-        department: 'Executive Board',
-      },
-      {
-        name: 'Varad Jadhav',
-        email: 'varad@bharattech.com',
-        password: 'Password123!',
-        role: 'accounts',
-        employeeId: 'ACC-301',
-        department: 'Finance & Accounts',
-      },
-      // Backward-compatible alias accounts
-      {
-        name: 'Demo Employee (Sarah)',
-        email: 'employee@abc.com',
-        password: 'Password123!',
-        role: 'employee',
-        employeeId: 'EMP-100',
-        department: 'Engineering',
-      },
-      {
-        name: 'Demo Director (Marcus)',
-        email: 'director@abc.com',
-        password: 'Password123!',
-        role: 'director',
-        employeeId: 'DIR-200',
-        department: 'Executive Board',
-      },
-      {
-        name: 'Demo Accounts (Elena)',
-        email: 'accounts@abc.com',
-        password: 'Password123!',
-        role: 'accounts',
-        employeeId: 'ACC-300',
-        department: 'Finance & Accounts',
-      },
-    ]);
 
     const year = new Date().getFullYear();
     await Counter.create({ _id: `voucher_${year}`, seq: 5 });
@@ -91,7 +36,6 @@ const seedData = async () => {
         description: 'Enrolled in Full Stack MERN advanced developer certification course.',
         expenseDescription: 'Enrolled in Full Stack MERN advanced developer certification course.',
         status: 'Approved',
-        user: users[0]._id,
       },
       {
         voucherNumber: `EV-${year}-0002`,
@@ -105,7 +49,6 @@ const seedData = async () => {
         description: 'Cab travel fare and toll expenses for on-site client software demonstration.',
         expenseDescription: 'Cab travel fare and toll expenses for on-site client software demonstration.',
         status: 'Pending',
-        user: users[1]._id,
       },
       {
         voucherNumber: `EV-${year}-0003`,
@@ -119,7 +62,6 @@ const seedData = async () => {
         description: 'Purchased dry-erase whiteboard markers, printer paper reams and cables.',
         expenseDescription: 'Purchased dry-erase whiteboard markers, printer paper reams and cables.',
         status: 'Paid',
-        user: users[2]._id,
       },
       {
         voucherNumber: `EV-${year}-0004`,
