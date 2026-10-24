@@ -1,23 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Edit2, Trash2, Send, CheckCircle, XCircle, Printer } from 'lucide-react';
+import { Eye, Edit2, Trash2 } from 'lucide-react';
 
-const VoucherTable = ({
-  vouchers,
-  currentRole,
-  onDelete,
-  onSubmit,
-  onOpenApproval,
-  loading = false,
-}) => {
+const VoucherTable = ({ vouchers, onDelete, loading = false }) => {
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'Pending':
       case 'Draft':
-        return <span className="badge badge-draft">Draft</span>;
-      case 'Submitted':
-        return <span className="badge badge-submitted">Pending Approval</span>;
+        return <span className="badge badge-submitted">Pending</span>;
       case 'Approved':
         return <span className="badge badge-approved">Approved</span>;
+      case 'Paid':
+        return <span className="badge" style={{ backgroundColor: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd' }}>Paid</span>;
       case 'Rejected':
         return <span className="badge badge-rejected">Rejected</span>;
       default:
@@ -27,7 +21,7 @@ const VoucherTable = ({
 
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -37,7 +31,7 @@ const VoucherTable = ({
   if (loading) {
     return (
       <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-        <p style={{ color: 'var(--slate-500)' }}>Loading vouchers data...</p>
+        <p style={{ color: 'var(--slate-500)' }}>Loading vouchers from MongoDB...</p>
       </div>
     );
   }
@@ -47,13 +41,11 @@ const VoucherTable = ({
       <div className="card" style={{ padding: '3.5rem 2rem', textAlign: 'center' }}>
         <h3 style={{ color: 'var(--slate-700)', marginBottom: '0.5rem' }}>No Vouchers Found</h3>
         <p style={{ color: 'var(--slate-500)', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
-          No expense vouchers match the selected criteria or none have been submitted yet.
+          No expense vouchers found in the database. Click "+ Add Voucher" to create your first voucher.
         </p>
-        {currentRole === 'employee' && (
-          <Link to="/vouchers/create" className="btn btn-primary">
-            Create First Voucher
-          </Link>
-        )}
+        <Link to="/create" className="btn btn-primary">
+          + Add New Voucher
+        </Link>
       </div>
     );
   }
@@ -64,12 +56,12 @@ const VoucherTable = ({
         <thead>
           <tr>
             <th>Voucher #</th>
-            <th>Expense Date</th>
-            {currentRole !== 'employee' && <th>Employee</th>}
+            <th>Date</th>
+            <th>Employee Name</th>
             <th>Department</th>
-            <th>Category</th>
+            <th>Expense Category</th>
             <th>Expense Title</th>
-            <th style={{ textAlign: 'right' }}>Amount</th>
+            <th style={{ textAlign: 'right' }}>Amount (₹)</th>
             <th style={{ textAlign: 'center' }}>Status</th>
             <th style={{ textAlign: 'right' }}>Actions</th>
           </tr>
@@ -86,16 +78,14 @@ const VoucherTable = ({
                 </Link>
               </td>
               <td>{formatDate(v.expenseDate)}</td>
-              {currentRole !== 'employee' && (
-                <td>
-                  <div>
-                    <strong style={{ display: 'block', color: 'var(--slate-800)' }}>{v.employeeName}</strong>
-                    {v.employeeId && (
-                      <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{v.employeeId}</span>
-                    )}
-                  </div>
-                </td>
-              )}
+              <td>
+                <div>
+                  <strong style={{ display: 'block', color: 'var(--slate-800)' }}>{v.employeeName}</strong>
+                  {v.employeeId && (
+                    <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{v.employeeId}</span>
+                  )}
+                </div>
+              </td>
               <td>
                 <span className="badge" style={{ backgroundColor: 'var(--slate-100)', color: 'var(--slate-700)' }}>
                   {v.department}
@@ -118,12 +108,12 @@ const VoucherTable = ({
                 </span>
               </td>
               <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--slate-900)' }}>
-                ${Number(v.amount).toFixed(2)}
+                ₹ {Number(v.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </td>
               <td style={{ textAlign: 'center' }}>{getStatusBadge(v.status)}</td>
               <td style={{ textAlign: 'right' }}>
-                <div className="action-row" style={{ justifyContent: 'flex-end' }}>
-                  {/* View Details Link */}
+                <div className="action-row" style={{ justifyContent: 'flex-end', gap: '0.4rem' }}>
+                  {/* View Details */}
                   <Link
                     to={`/vouchers/${v._id}`}
                     className="btn btn-ghost btn-sm"
@@ -134,14 +124,14 @@ const VoucherTable = ({
 
                   {/* Edit Voucher */}
                   <Link
-                    to={`/vouchers/edit/${v._id}`}
+                    to={`/edit/${v._id}`}
                     className="btn btn-secondary btn-sm"
                     title="Edit Voucher"
                   >
                     <Edit2 size={15} />
                   </Link>
 
-                  {/* Delete Voucher with Confirmation */}
+                  {/* Delete Voucher */}
                   <button
                     type="button"
                     onClick={() => onDelete && onDelete(v._id, v.voucherNumber)}
@@ -151,49 +141,6 @@ const VoucherTable = ({
                   >
                     <Trash2 size={16} />
                   </button>
-
-                  {/* Submit if in Draft */}
-                  {v.status === 'Draft' && onSubmit && (
-                    <button
-                      type="button"
-                      onClick={() => onSubmit(v)}
-                      className="btn btn-primary btn-sm"
-                      title="Submit Voucher for Review"
-                    >
-                      <Send size={14} /> Submit
-                    </button>
-                  )}
-
-                  {/* Director Quick Approval Actions */}
-                  {currentRole === 'director' && v.status === 'Submitted' && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => onOpenApproval && onOpenApproval(v, 'approve')}
-                        className="btn btn-success btn-sm"
-                        title="Approve Voucher"
-                      >
-                        <CheckCircle size={15} /> Approve
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onOpenApproval && onOpenApproval(v, 'reject')}
-                        className="btn btn-danger btn-sm"
-                        title="Reject Voucher"
-                      >
-                        <XCircle size={15} /> Reject
-                      </button>
-                    </>
-                  )}
-
-                  {/* Print / Export Button */}
-                  <Link
-                    to={`/vouchers/${v._id}?print=true`}
-                    className="btn btn-ghost btn-sm"
-                    title="Print Voucher"
-                  >
-                    <Printer size={16} />
-                  </Link>
                 </div>
               </td>
             </tr>

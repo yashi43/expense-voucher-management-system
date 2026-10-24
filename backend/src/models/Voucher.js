@@ -2,69 +2,15 @@ const mongoose = require('mongoose');
 
 const VoucherSchema = new mongoose.Schema(
   {
-    // Basic Information
     voucherNumber: {
       type: String,
-      required: [true, 'Voucher number is required'],
+      required: true,
       unique: true,
-      index: true,
-    },
-    voucherDate: {
-      type: Date,
-      default: Date.now,
-      required: true,
-    },
-    expenseDate: {
-      type: Date,
-      required: [true, 'Expense date is mandatory'],
-    },
-    department: {
-      type: String,
-      required: [true, 'Department is mandatory'],
       trim: true,
-    },
-    expenseTitle: {
-      type: String,
-      required: [true, 'Expense title is mandatory'],
-      trim: true,
-    },
-    expenseCategory: {
-      type: String,
-      required: [true, 'Expense category is mandatory'],
-      enum: [
-        'Travel',
-        'Meals & Entertainment',
-        'Office Supplies',
-        'Software & Tools',
-        'Accommodation',
-        'Training & Certification',
-        'Client Relations',
-        'Communication & Internet',
-        'Miscellaneous',
-      ],
-      default: 'Miscellaneous',
-    },
-    expenseDescription: {
-      type: String,
-      trim: true,
-      default: '',
-    },
-    amount: {
-      type: Number,
-      required: [true, 'Amount is mandatory'],
-      min: [0.01, 'Amount must be greater than zero'],
-    },
-
-    // Employee Information
-    employee: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
     },
     employeeName: {
       type: String,
-      required: [true, 'Employee name is mandatory'],
+      required: [true, 'Employee name is required'],
       trim: true,
     },
     employeeId: {
@@ -72,24 +18,50 @@ const VoucherSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
-    employeeSignature: {
+    department: {
       type: String,
+      required: [true, 'Department is required'],
+      trim: true,
+    },
+    expenseTitle: {
+      type: String,
+      required: [true, 'Expense title is required'],
+      trim: true,
+    },
+    expenseCategory: {
+      type: String,
+      required: [true, 'Expense category is required'],
+      default: 'Miscellaneous',
+    },
+    expenseDate: {
+      type: Date,
+      required: [true, 'Expense date is required'],
+    },
+    amount: {
+      type: Number,
+      required: [true, 'Amount in INR (₹) is required'],
+      min: [1, 'Amount must be at least ₹1'],
+    },
+    description: {
+      type: String,
+      trim: true,
       default: '',
     },
-
-    // Approval Information
+    expenseDescription: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     status: {
       type: String,
-      enum: ['Draft', 'Submitted', 'Approved', 'Rejected'],
-      default: 'Draft',
-      index: true,
+      enum: ['Pending', 'Approved', 'Paid', 'Rejected', 'Draft', 'Submitted'],
+      default: 'Pending',
     },
-    director: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      default: null,
     },
-    directorName: {
+    employeeSignature: {
       type: String,
       default: '',
     },
@@ -97,22 +69,21 @@ const VoucherSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    directorName: {
+      type: String,
+      default: '',
+    },
     approvalDate: {
       type: Date,
-      default: null,
     },
     rejectionReason: {
       type: String,
       default: '',
-      trim: true,
     },
   },
   {
-    timestamps: true, // createdDate and lastUpdatedDate
+    timestamps: true,
   }
 );
-
-// Compound index for efficient searching & filtering
-VoucherSchema.index({ status: 1, department: 1, expenseCategory: 1, expenseDate: -1 });
 
 module.exports = mongoose.model('Voucher', VoucherSchema);

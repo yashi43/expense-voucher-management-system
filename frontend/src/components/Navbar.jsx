@@ -1,15 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
-  FileText,
-  PlusCircle,
-  LayoutDashboard,
-  Clock,
-  LogOut,
-  FolderOpen,
-  UserCheck,
-} from 'lucide-react';
+import { LayoutDashboard, PlusCircle, FolderOpen, IndianRupee, LogOut, User } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -20,35 +12,28 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  const getRoleBadgeClass = (role) => {
-    switch (role) {
-      case 'director':
-        return 'badge-role-director';
-      case 'accounts':
-        return 'badge-role-accounts';
-      default:
-        return 'badge-role-employee';
-    }
-  };
-
   return (
     <header className="navbar no-print">
       <div className="container">
         <div className="navbar-inner">
-          {/* Brand Logo */}
+          {/* Indian Brand Logo */}
           <NavLink to="/dashboard" className="brand-logo">
-            <div className="brand-icon-box">
-              <FileText size={22} />
+            <div className="brand-icon-box" style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+              <IndianRupee size={22} />
             </div>
             <div>
-              <span style={{ color: 'var(--primary)', fontWeight: 800 }}>ABC</span>
-              <span style={{ color: 'var(--slate-800)', marginLeft: '4px' }}>Vouchers</span>
+              <div style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--slate-900)', lineHeight: 1.1 }}>
+                Bharat Tech Solutions
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', fontWeight: 600 }}>
+                Employee Expense Voucher System
+              </div>
             </div>
           </NavLink>
 
-          {/* Navigation Links based on Role */}
+          {/* Navigation Links */}
           <nav>
-            <ul className="nav-links">
+            <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <li>
                 <NavLink
                   to="/dashboard"
@@ -61,18 +46,7 @@ const Navbar = () => {
 
               <li>
                 <NavLink
-                  to="/vouchers/create"
-                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                >
-                  <PlusCircle size={18} />
-                  <span>Create Voucher</span>
-                </NavLink>
-              </li>
-
-              <li>
-                <NavLink
                   to="/vouchers"
-                  end
                   className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                 >
                   <FolderOpen size={18} />
@@ -80,44 +54,41 @@ const Navbar = () => {
                 </NavLink>
               </li>
 
-              {/* Director Specific Links */}
-              {user?.role === 'director' && (
-                <li>
-                  <NavLink
-                    to="/vouchers/pending"
-                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              <li>
+                <NavLink
+                  to="/create"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  <PlusCircle size={18} />
+                  <span>+ Add Voucher</span>
+                </NavLink>
+              </li>
+
+              {/* User Profile Pill & Logout */}
+              {user && (
+                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: '0.5rem', borderLeft: '1px solid var(--border-color)', paddingLeft: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                      <User size={15} />
+                    </div>
+                    <div>
+                      <strong style={{ display: 'block', color: 'var(--slate-800)', lineHeight: 1.1 }}>{user.name}</strong>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--slate-500)', textTransform: 'capitalize' }}>{user.role}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleLogout}
+                    className="btn btn-ghost btn-sm"
+                    style={{ color: 'var(--slate-600)', padding: '0.35rem 0.6rem' }}
+                    title="Log Out"
                   >
-                    <Clock size={18} />
-                    <span>Pending Approvals</span>
-                  </NavLink>
+                    <LogOut size={16} />
+                  </button>
                 </li>
               )}
             </ul>
           </nav>
-
-          {/* User Info & Logout */}
-          <div className="flex items-center gap-3">
-            <div className="user-pill">
-              <div className="avatar">
-                {user?.name ? user.name.charAt(0).toUpperCase() : <UserCheck size={16} />}
-              </div>
-              <div className="user-info-text">
-                <span className="user-name">{user?.name}</span>
-                <span className={`badge ${getRoleBadgeClass(user?.role)}`} style={{ fontSize: '0.68rem', padding: '0.1rem 0.45rem' }}>
-                  {user?.role?.toUpperCase()}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="btn btn-ghost btn-sm"
-              title="Logout from application"
-              style={{ color: 'var(--danger)', padding: '0.5rem' }}
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
         </div>
       </div>
     </header>

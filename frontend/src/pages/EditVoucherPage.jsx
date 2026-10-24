@@ -4,46 +4,44 @@ import api from '../services/api';
 import { Save, ArrowLeft, AlertCircle } from 'lucide-react';
 
 const DEPARTMENTS = [
-  'Engineering',
-  'Marketing',
+  'Software Engineering',
+  'Marketing & Sales',
   'Finance & Accounts',
   'Human Resources',
-  'Sales',
-  'Operations',
+  'Operations & Logistics',
+  'IT Infrastructure',
   'Executive Board',
-  'Product Design',
 ];
 
 const CATEGORIES = [
-  'Travel',
-  'Meals & Entertainment',
-  'Office Supplies',
-  'Software & Tools',
-  'Accommodation',
+  'Travel & Conveyance',
+  'Meals & Refreshments',
+  'Office Supplies & Stationery',
+  'Software & Cloud Tools',
   'Training & Certification',
   'Client Relations',
-  'Communication & Internet',
   'Miscellaneous',
 ];
 
-const STATUSES = ['Draft', 'Submitted', 'Approved', 'Rejected'];
+const STATUSES = ['Pending', 'Approved', 'Paid', 'Rejected'];
 
 const EditVoucherPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    department: '',
+    employeeName: '',
+    employeeId: '',
+    department: 'Software Engineering',
     expenseTitle: '',
     expenseDate: '',
-    expenseCategory: '',
-    expenseDescription: '',
+    expenseCategory: 'Travel & Conveyance',
+    description: '',
     amount: '',
-    status: 'Draft',
+    status: 'Pending',
   });
 
   const [voucherNumber, setVoucherNumber] = useState('');
-  const [employeeName, setEmployeeName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -56,15 +54,16 @@ const EditVoucherPage = () => {
         if (res.data.success) {
           const v = res.data.data;
           setVoucherNumber(v.voucherNumber);
-          setEmployeeName(v.employeeName);
           setFormData({
-            department: v.department || 'Engineering',
+            employeeName: v.employeeName || '',
+            employeeId: v.employeeId || '',
+            department: v.department || 'Software Engineering',
             expenseTitle: v.expenseTitle || '',
             expenseDate: v.expenseDate ? v.expenseDate.split('T')[0] : '',
             expenseCategory: v.expenseCategory || 'Miscellaneous',
-            expenseDescription: v.expenseDescription || '',
+            description: v.description || v.expenseDescription || '',
             amount: v.amount || '',
-            status: v.status || 'Draft',
+            status: v.status || 'Pending',
           });
         }
       } catch (err) {
@@ -83,20 +82,22 @@ const EditVoucherPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validateBasicFields = () => {
-    if (!formData.department.trim()) return 'Department is mandatory.';
-    if (!formData.expenseTitle.trim()) return 'Expense Title is mandatory.';
-    if (!formData.expenseDate) return 'Expense Date is mandatory.';
-    if (!formData.amount || Number(formData.amount) <= 0)
-      return 'Amount is mandatory and must be greater than zero.';
-    return null;
-  };
-
   const handleUpdate = async (e) => {
     e.preventDefault();
-    const valError = validateBasicFields();
-    if (valError) {
-      setError(valError);
+    if (!formData.employeeName.trim()) {
+      setError('Employee Name is mandatory.');
+      return;
+    }
+    if (!formData.expenseTitle.trim()) {
+      setError('Expense Title is mandatory.');
+      return;
+    }
+    if (!formData.expenseDate) {
+      setError('Expense Date is mandatory.');
+      return;
+    }
+    if (!formData.amount || Number(formData.amount) <= 0) {
+      setError('Claim Amount in INR (₹) must be greater than zero.');
       return;
     }
 
@@ -107,6 +108,7 @@ const EditVoucherPage = () => {
       const res = await api.put(`/vouchers/${id}`, {
         ...formData,
         amount: Number(formData.amount),
+        expenseDescription: formData.description,
       });
 
       if (res.data.success) {
@@ -139,9 +141,9 @@ const EditVoucherPage = () => {
         >
           <ArrowLeft size={16} /> Back
         </button>
-        <h1>Edit Expense Voucher</h1>
+        <h1 style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>Edit Expense Voucher</h1>
         <p style={{ color: 'var(--slate-500)' }}>
-          Update voucher <strong>{voucherNumber}</strong> ({employeeName})
+          Update voucher <strong>{voucherNumber}</strong> in MongoDB.
         </p>
       </div>
 
@@ -154,11 +156,39 @@ const EditVoucherPage = () => {
 
       <form onSubmit={handleUpdate} className="card">
         <div className="card-header">
-          <div className="card-title">Edit Voucher Details</div>
-          <span className="badge badge-draft">{formData.status}</span>
+          <div className="card-title">Edit Voucher Information</div>
+          <span className="badge badge-submitted">{formData.status}</span>
         </div>
 
         <div className="card-body">
+          {/* Employee Info Row */}
+          <div className="grid grid-cols-2" style={{ gap: '1.25rem', marginBottom: '1.25rem' }}>
+            <div className="form-group">
+              <label className="form-label">
+                Employee Name <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                name="employeeName"
+                className="form-control"
+                value={formData.employeeName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Employee ID</label>
+              <input
+                type="text"
+                name="employeeId"
+                className="form-control"
+                value={formData.employeeId}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2" style={{ gap: '1.25rem' }}>
             <div className="form-group">
               <label className="form-label">
@@ -232,18 +262,24 @@ const EditVoucherPage = () => {
           <div className="grid grid-cols-2" style={{ gap: '1.25rem' }}>
             <div className="form-group">
               <label className="form-label">
-                Claim Amount ($) <span className="required">*</span>
+                Claim Amount (₹ INR) <span className="required">*</span>
               </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0.01"
-                name="amount"
-                className="form-control"
-                value={formData.amount}
-                onChange={handleChange}
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--slate-500)' }}>
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  name="amount"
+                  className="form-control"
+                  style={{ paddingLeft: '2rem' }}
+                  value={formData.amount}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
 
             <div className="form-group">
@@ -258,7 +294,7 @@ const EditVoucherPage = () => {
               >
                 {STATUSES.map((st) => (
                   <option key={st} value={st}>
-                    {st === 'Submitted' ? 'Submitted (Pending Review)' : st}
+                    {st === 'Pending' ? 'Pending Review' : st}
                   </option>
                 ))}
               </select>
@@ -268,17 +304,17 @@ const EditVoucherPage = () => {
           <div className="form-group">
             <label className="form-label">Expense Description</label>
             <textarea
-              name="expenseDescription"
+              name="description"
               rows={3}
               placeholder="Provide context or notes about this expenditure..."
               className="form-textarea"
-              value={formData.expenseDescription}
+              value={formData.description}
               onChange={handleChange}
             />
           </div>
         </div>
 
-        <div className="card-footer">
+        <div className="card-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -292,7 +328,7 @@ const EditVoucherPage = () => {
             disabled={saving}
             className="btn btn-primary"
           >
-            <Save size={16} /> {saving ? 'Saving...' : 'Update & Save Voucher'}
+            <Save size={16} /> {saving ? 'Saving...' : 'Update & Save in MongoDB'}
           </button>
         </div>
       </form>

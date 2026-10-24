@@ -62,7 +62,7 @@ const VoucherDocument = ({ voucher }) => {
       {/* Document Header */}
       <div className="voucher-header">
         <div>
-          <div className="voucher-company-name">ABC COMPANY</div>
+          <div className="voucher-company-name">BHARAT TECH SOLUTIONS PVT. LTD.</div>
           <div style={{ fontSize: '0.85rem', color: 'var(--slate-500)', marginTop: '2px' }}>
             Corporate Expense Reimbursement Management System
           </div>
@@ -134,7 +134,7 @@ const VoucherDocument = ({ voucher }) => {
             {voucher.expenseTitle}
           </div>
           <p style={{ color: 'var(--slate-700)', whiteSpace: 'pre-line', fontSize: '0.95rem' }}>
-            {voucher.expenseDescription || 'No additional notes provided.'}
+            {voucher.description || voucher.expenseDescription || 'No additional notes provided.'}
           </p>
         </div>
       </div>
@@ -156,7 +156,7 @@ const VoucherDocument = ({ voucher }) => {
           TOTAL CLAIM AMOUNT:
         </span>
         <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--slate-900)' }}>
-          ${Number(voucher.amount).toFixed(2)}
+          ₹ {Number(voucher.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
       </div>
 

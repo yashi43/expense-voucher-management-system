@@ -4,7 +4,7 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
 });
 
-// Interceptor to attach JWT token to all outgoing requests
+// Interceptor to inject the JWT auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('ev_token');
@@ -16,16 +16,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor to handle global errors (e.g. 401 session expiry)
+// Interceptor to handle unauthenticated 401 responses
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Don't auto-redirect if we are already on login
+      // If unauthorized and not already on login page, clear token
       if (!window.location.pathname.includes('/login')) {
         localStorage.removeItem('ev_token');
         localStorage.removeItem('ev_user');
-        window.location.href = '/login';
       }
     }
     return Promise.reject(error);

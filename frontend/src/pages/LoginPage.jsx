@@ -71,13 +71,13 @@ const LoginPage = () => {
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div
             className="brand-icon-box"
-            style={{ width: '3.5rem', height: '3.5rem', margin: '0 auto 1rem', fontSize: '1.5rem' }}
+            style={{ width: '3.5rem', height: '3.5rem', margin: '0 auto 1rem', fontSize: '1.5rem', background: 'linear-gradient(135deg, #047857, #10b981)' }}
           >
             <FileText size={28} />
           </div>
-          <h2 style={{ fontSize: '1.6rem', color: 'var(--slate-900)' }}>ABC Company</h2>
+          <h2 style={{ fontSize: '1.5rem', color: 'var(--slate-900)' }}>Bharat Tech Solutions</h2>
           <p style={{ color: 'var(--slate-500)', fontSize: '0.925rem' }}>
-            Expense Voucher Management System
+            Employee Expense Voucher Management System
           </p>
         </div>
 
@@ -94,7 +94,7 @@ const LoginPage = () => {
                     type="text"
                     required
                     className="form-control"
-                    placeholder="e.g. John Doe"
+                    placeholder="e.g. Yashi Mehta"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
@@ -124,7 +124,7 @@ const LoginPage = () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="EMP-1001"
+                    placeholder="EMP-101"
                     value={employeeId}
                     onChange={(e) => setEmployeeId(e.target.value)}
                   />
@@ -134,7 +134,7 @@ const LoginPage = () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Engineering"
+                    placeholder="Software Engineering"
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
                   />
@@ -151,7 +151,7 @@ const LoginPage = () => {
                 type="email"
                 required
                 className="form-control"
-                placeholder="name@abc.com"
+                placeholder="yashi@bharattech.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -210,36 +210,36 @@ const LoginPage = () => {
 
         {/* Demo Fast Login Box */}
         <div className="demo-account-box">
-          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--slate-600)', textTransform: 'uppercase', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--slate-600)', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.5rem' }}>
             Quick Demo Accounts (1-Click Login)
           </div>
-          <div className="demo-buttons-grid">
+          <div className="demo-buttons-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               disabled={loading}
-              onClick={() => handleQuickDemoLogin('employee@abc.com', 'Password123!')}
-              title="Employee: Sarah Jenkins"
+              onClick={() => handleQuickDemoLogin('yashi@bharattech.com', 'Password123!')}
+              title="Employee: Yashi Mehta"
             >
-              Employee
+              Yashi (Emp)
             </button>
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               disabled={loading}
-              onClick={() => handleQuickDemoLogin('director@abc.com', 'Password123!')}
-              title="Director: Marcus Vance"
+              onClick={() => handleQuickDemoLogin('sakshi@bharattech.com', 'Password123!')}
+              title="Director: Sakshi Phadtare"
             >
-              Director
+              Sakshi (Dir)
             </button>
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               disabled={loading}
-              onClick={() => handleQuickDemoLogin('accounts@abc.com', 'Password123!')}
-              title="Accounts Team: Elena Rostova"
+              onClick={() => handleQuickDemoLogin('varad@bharattech.com', 'Password123!')}
+              title="Accounts: Varad Jadhav"
             >
-              Accounts
+              Varad (Acc)
             </button>
           </div>
         </div>

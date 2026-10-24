@@ -1,36 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const {
+  getVouchers,
+  getVoucherById,
   createVoucher,
   updateVoucher,
   deleteVoucher,
   submitVoucher,
-  getVouchers,
-  getVoucherById,
   approveVoucher,
   rejectVoucher,
 } = require('../controllers/voucherController');
-const { protect, authorize } = require('../middleware/auth');
 
-// Protected for all authenticated users
-router.use(protect);
-
-// Voucher collection routes
+// Voucher Collection Routes
 router
   .route('/')
   .get(getVouchers)
   .post(createVoucher);
 
-// Single voucher routes
+// Single Voucher Routes
 router
   .route('/:id')
   .get(getVoucherById)
   .put(updateVoucher)
   .delete(deleteVoucher);
 
-// Workflow state transition routes
-router.post('/:id/submit', authorize('employee'), submitVoucher);
-router.post('/:id/approve', authorize('director'), approveVoucher);
-router.post('/:id/reject', authorize('director'), rejectVoucher);
+// Workflow endpoints
+router.post('/:id/submit', submitVoucher);
+router.post('/:id/approve', approveVoucher);
+router.post('/:id/reject', rejectVoucher);
 
 module.exports = router;

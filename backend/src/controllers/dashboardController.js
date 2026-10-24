@@ -5,28 +5,44 @@ const Voucher = require('../models/Voucher');
 // @access  Private (Employee, Director, Accounts)
 exports.getDashboardStats = async (req, res, next) => {
   try {
-    const role = req.user.role;
-    const userId = req.user._id;
+    const role = req.user?.role || 'employee';
+    const userId = req.user?._id;
+    const employeeId = req.user?.employeeId;
+    const employeeName = req.user?.name;
+
+    // Common aggregates across the company
+    const totalOrgVouchers = await Voucher.countDocuments();
+    const totalOrgAmountAgg = await Voucher.aggregate([
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+    const totalOrgAmount = totalOrgAmountAgg.length > 0 ? totalOrgAmountAgg[0].total : 0;
 
     if (role === 'employee') {
-      // 8.1 Employee Dashboard
-      // - Total Vouchers
-      // - Draft Vouchers
-      // - Pending Approval
-      // - Approved Vouchers
-      // - Rejected Vouchers
-      // - Total Amount Claimed
+      // If user has specific vouchers linked, filter by user/name, else show company vouchers
+      const userFilter = {};
+      if (userId) {
+        userFilter.$or = [
+          { user: userId },
+          ...(employeeId ? [{ employeeId }] : []),
+          ...(employeeName ? [{ employeeName: new RegExp(`^${employeeName}$`, 'i') }] : []),
+        ];
+      }
+
+      // Check if user has any vouchers matching
+      const userCount = await Voucher.countDocuments(userFilter);
+      const activeFilter = userCount > 0 ? userFilter : {};
+
       const [total, draft, pending, approved, rejected, amountAgg, recent] = await Promise.all([
-        Voucher.countDocuments({ employee: userId }),
-        Voucher.countDocuments({ employee: userId, status: 'Draft' }),
-        Voucher.countDocuments({ employee: userId, status: 'Submitted' }),
-        Voucher.countDocuments({ employee: userId, status: 'Approved' }),
-        Voucher.countDocuments({ employee: userId, status: 'Rejected' }),
+        Voucher.countDocuments(activeFilter),
+        Voucher.countDocuments({ ...activeFilter, status: 'Draft' }),
+        Voucher.countDocuments({ ...activeFilter, status: { $in: ['Pending', 'Submitted'] } }),
+        Voucher.countDocuments({ ...activeFilter, status: { $in: ['Approved', 'Paid'] } }),
+        Voucher.countDocuments({ ...activeFilter, status: 'Rejected' }),
         Voucher.aggregate([
-          { $match: { employee: userId } },
+          { $match: activeFilter },
           { $group: { _id: null, totalClaimed: { $sum: '$amount' } } },
         ]),
-        Voucher.find({ employee: userId }).sort({ createdAt: -1 }).limit(5),
+        Voucher.find(activeFilter).sort({ createdAt: -1 }).limit(5),
       ]);
 
       return res.status(200).json({
@@ -45,31 +61,16 @@ exports.getDashboardStats = async (req, res, next) => {
     }
 
     if (role === 'director') {
-      // 8.2 Director Dashboard
-      // - Pending Approval Count
-      // - Approved Today
-      // - Rejected Today
-      // - Total Pending Amount
-      // - Recent Voucher Activity
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
-
       const [pendingCount, pendingAmountAgg, approvedToday, rejectedToday, recentActivity] =
         await Promise.all([
-          Voucher.countDocuments({ status: 'Submitted' }),
+          Voucher.countDocuments({ status: { $in: ['Pending', 'Submitted'] } }),
           Voucher.aggregate([
-            { $match: { status: 'Submitted' } },
+            { $match: { status: { $in: ['Pending', 'Submitted'] } } },
             { $group: { _id: null, totalPending: { $sum: '$amount' } } },
           ]),
-          Voucher.countDocuments({
-            status: 'Approved',
-            approvalDate: { $gte: startOfToday },
-          }),
-          Voucher.countDocuments({
-            status: 'Rejected',
-            approvalDate: { $gte: startOfToday },
-          }),
-          Voucher.find().sort({ updatedAt: -1 }).limit(6).populate('employee', 'name department'),
+          Voucher.countDocuments({ status: { $in: ['Approved', 'Paid'] } }),
+          Voucher.countDocuments({ status: 'Rejected' }),
+          Voucher.find().sort({ updatedAt: -1 }).limit(6),
         ]);
 
       return res.status(200).json({
@@ -86,27 +87,19 @@ exports.getDashboardStats = async (req, res, next) => {
     }
 
     if (role === 'accounts') {
-      // 8.3 Accounts Dashboard
-      // - Total Vouchers
-      // - Pending Approval
-      // - Approved Vouchers
-      // - Rejected Vouchers
-      // - Total Approved Expense Amount
-      // - Recent Approved Vouchers
       const [total, pending, approved, rejected, approvedAmountAgg, recentApproved] =
         await Promise.all([
           Voucher.countDocuments(),
-          Voucher.countDocuments({ status: 'Submitted' }),
-          Voucher.countDocuments({ status: 'Approved' }),
+          Voucher.countDocuments({ status: { $in: ['Pending', 'Submitted'] } }),
+          Voucher.countDocuments({ status: { $in: ['Approved', 'Paid'] } }),
           Voucher.countDocuments({ status: 'Rejected' }),
           Voucher.aggregate([
-            { $match: { status: 'Approved' } },
+            { $match: { status: { $in: ['Approved', 'Paid'] } } },
             { $group: { _id: null, totalApproved: { $sum: '$amount' } } },
           ]),
-          Voucher.find({ status: 'Approved' })
-            .sort({ approvalDate: -1 })
-            .limit(6)
-            .populate('employee', 'name department employeeId'),
+          Voucher.find({ status: { $in: ['Approved', 'Paid'] } })
+            .sort({ updatedAt: -1 })
+            .limit(6),
         ]);
 
       return res.status(200).json({
@@ -124,7 +117,14 @@ exports.getDashboardStats = async (req, res, next) => {
       });
     }
 
-    return res.status(400).json({ success: false, message: 'Invalid role for dashboard' });
+    return res.status(200).json({
+      success: true,
+      role: 'general',
+      stats: {
+        totalVouchers: totalOrgVouchers,
+        totalAmountClaimed: totalOrgAmount,
+      },
+    });
   } catch (err) {
     next(err);
   }

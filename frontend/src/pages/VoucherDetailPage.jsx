@@ -60,7 +60,7 @@ const VoucherDetailPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this draft voucher?')) return;
+    if (!window.confirm('Are you sure you want to permanently delete this expense voucher from MongoDB?')) return;
 
     try {
       const res = await api.delete(`/vouchers/${id}`);

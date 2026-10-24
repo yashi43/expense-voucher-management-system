@@ -9,7 +9,7 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  DollarSign,
+  IndianRupee,
   PlusCircle,
   ArrowRight,
   TrendingUp,
@@ -125,10 +125,10 @@ const DashboardPage = () => {
             <div className="stat-card">
               <div className="stat-content">
                 <span className="stat-label">Total Claimed</span>
-                <span className="stat-value">${Number(stats.totalAmountClaimed || 0).toFixed(2)}</span>
+                <span className="stat-value">₹ {Number(stats.totalAmountClaimed || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
-              <div className="stat-icon stat-slate">
-                <DollarSign size={24} />
+              <div className="stat-icon stat-green">
+                <IndianRupee size={24} />
               </div>
             </div>
 
@@ -234,10 +234,10 @@ const DashboardPage = () => {
             <div className="stat-card">
               <div className="stat-content">
                 <span className="stat-label">Total Pending Amount</span>
-                <span className="stat-value">${Number(stats.totalPendingAmount || 0).toFixed(2)}</span>
+                <span className="stat-value">₹ {Number(stats.totalPendingAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="stat-icon stat-blue">
-                <DollarSign size={24} />
+                <IndianRupee size={24} />
               </div>
             </div>
 
@@ -304,7 +304,7 @@ const DashboardPage = () => {
             <div className="stat-card">
               <div className="stat-content">
                 <span className="stat-label">Approved Reimbursement</span>
-                <span className="stat-value">${Number(stats.totalApprovedExpenseAmount || 0).toFixed(2)}</span>
+                <span className="stat-value">₹ {Number(stats.totalApprovedExpenseAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="stat-icon stat-green">
                 <TrendingUp size={24} />

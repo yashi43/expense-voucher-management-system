@@ -52,6 +52,14 @@ function App() {
 
             {/* Create Voucher */}
             <Route
+              path="/create"
+              element={
+                <ProtectedRoute allowedRoles={['employee', 'director', 'accounts']}>
+                  <CreateVoucherPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/vouchers/create"
               element={
                 <ProtectedRoute allowedRoles={['employee', 'director', 'accounts']}>
@@ -61,6 +69,14 @@ function App() {
             />
 
             {/* Edit Voucher */}
+            <Route
+              path="/edit/:id"
+              element={
+                <ProtectedRoute allowedRoles={['employee', 'director', 'accounts']}>
+                  <EditVoucherPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/vouchers/edit/:id"
               element={
